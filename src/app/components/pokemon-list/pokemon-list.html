@@ -1,0 +1,25 @@
+<mat-toolbar color="primary">Pokédex</mat-toolbar>
+
+<main class="content">
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <div class="center">
+      <mat-spinner diameter="40" />
+    </div>
+  } @else {
+    <div class="grid">
+      @for (pokemon of pokemons(); track pokemon.id) {
+        <mat-card class="pokemon-card">
+          <img [src]="pokemon.sprite" [alt]="pokemon.name" loading="lazy" />
+          <mat-card-content>
+            <span class="id">#{{ pokemon.id | number: '3.0-0' }}</span>
+            <h3 class="name">{{ pokemon.name }}</h3>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  }
+</main>

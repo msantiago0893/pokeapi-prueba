@@ -1,0 +1,39 @@
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.pokemon-card {
+  text-align: center;
+}
+
+.pokemon-card img {
+  background: #f4f6f8;
+  border-radius: 12px;
+  padding: 8px;
+  object-fit: contain;
+  width: 100%;
+  height: 140px;
+}
+
+.id {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.name {
+  margin: 4px 0 0;
+  text-transform: capitalize;
+}
+
+.error {
+  text-align: center;
+  color: #b3261e;
+}
