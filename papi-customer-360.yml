@@ -1,0 +1,1904 @@
+openapi: 3.0.3
+
+info:
+  title: PAPI-Customer-360
+  version: 1.0.0
+  description: Business API for retrieving and updating employee information from the Customer 360 domain.
+
+servers:
+  - url: https://api.example.com
+
+tags:
+  - name: Customers
+    description: Operations related to customers.
+
+security:
+  - BearerAuth: []
+
+paths:
+
+  /customers/v1/customers/{employeeNumber}/access:
+    get:
+      tags:
+        - Customers
+      summary: Get employee information
+      
+      description: Retrieves employee information based on the employee number.
+      operationId: getEmployeeByEmployeeNumber
+
+      parameters:
+        - name: employeeNumber
+          in: path
+          required: true
+          description: Unique employee identifier assigned by the organization.
+          schema:
+            type: string
+          example: "100245"
+
+        - $ref: "#/components/parameters/XTransactionID"
+
+      responses:
+        "200":
+          description: Employee information retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmployeeResponse"
+              example:
+                meta:
+                  transactionID: "27d00424-85c2-45ba-b2b1-4a5f8e412201"
+                  status: "OK"
+                  statusCode: 200
+                  timestamp: "2026-07-26T16:53:30.234698Z"
+                data:
+                  employeeNumber: "100245"
+                  name:
+                    name: "José"
+                    lastName: "Ramos"
+                    secondLastName: "Vanegas"
+                  status:
+                    value: "ACTIVE"
+                    description: "Activo"
+                  role:
+                    - value: "ADMINISTRATOR"
+                      description: "Administrador"
+                    - value: "SUPERVISOR"
+                      description: "Supervisor"
+
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+        "504":
+          $ref: "#/components/responses/GatewayTimeout"
+
+    patch:
+      tags:
+        - Customers
+      summary: Update employee status and/or role
+      description: Updates one or both mutable employee attributes (status and role).
+      operationId: updateEmployee
+
+      parameters:
+        - name: employeeNumber
+          in: path
+          required: true
+          description: Unique employee identifier assigned by the organization.
+          schema:
+            type: string
+          example: "100245"
+
+        - $ref: "#/components/parameters/XTransactionID"
+
+      requestBody:
+        required: true
+        description: Employee attributes to update.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRequest"
+
+      responses:
+        "200":
+          description: Employee updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmployeeResponse"
+
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+        "504":
+          $ref: "#/components/responses/GatewayTimeout"
+
+  /customers/v1/customers/credits:
+    get:
+      tags:
+        - Customers
+      summary: Search customer credit information
+      description: >
+        Retrieves customer credit information by employee number or customer name.
+        At least one search criterion must be provided.
+
+      operationId: searchCustomerCredits
+
+      parameters:
+        - name: employeeNumber
+          in: query
+          required: false
+          description: Employee number used to identify the customer.
+          schema:
+            type: string
+          example: "100245"
+
+        - name: name
+          in: query
+          required: false
+          description: Customer given name.
+          schema:
+            type: string
+          example: "José"
+
+        - name: lastName
+          in: query
+          required: false
+          description: Customer first last name.
+          schema:
+            type: string
+          example: "Ramos"
+
+        - name: secondLastName
+          in: query
+          required: false
+          description: Customer second last name.
+          schema:
+            type: string
+          example: "Vanegas"
+
+        - $ref: "#/components/parameters/XTransactionID"
+
+      responses:
+        "200":
+          description: Customer credit information retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerCreditResponse"
+              example:
+                meta:
+                  transactionID: "27d00424-85c2-45ba-b2b1-4a5f8e412201"
+                  status: "OK"
+                  statusCode: 200
+                  timestamp: "2026-07-20T10:30:45.123456Z"
+                data:
+                  - employeeNumber: "100245"
+                    name:
+                      name: "José"
+                      lastName: "Ramos"
+                      secondLastName: "Vanegas"
+                    address:
+                      street: "Benito Juárez"
+                      number: 30
+                      zone: "Colonia Romero"
+                      zip: "54430"
+                      city:
+                        name: "Ciudad de México"
+                        number: 10
+                    credit:
+                      applicationDate: "2026-07-18"
+                      approvalDate: "2026-07-19"
+                      originationDate: "2026-07-20"
+                      originatingStore: 124
+                      creditLimit:
+                        max: 20000.00
+                        real: 18000.00
+                      paymentPunctuality: "A"
+
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+        "504":
+          $ref: "#/components/responses/GatewayTimeout"
+
+  /customers/v1/customers/details:
+    get:
+      tags:
+        - Customers
+      summary: Search customer details
+      description: >
+        Retrieves detailed customer information by customer identifier or customer name.
+        At least one search criterion must be provided. Customer name can be
+        searched using one or more name fields.
+      operationId: searchCustomerDetails
+
+      parameters:
+        - name: customerId
+          in: query
+          required: false
+          description: Unique customer identifier.
+          schema:
+            type: string
+            example: "100245"
+
+        - name: firstName
+          in: query
+          required: false
+          description: Customer given name.
+          schema:
+            type: string
+            example: José
+
+        - name: lastName
+          in: query
+          required: false
+          description: Customer first last name.
+          schema:
+            type: string
+            example: Ramos
+
+        - name: secondLastName
+          in: query
+          required: false
+          description: Customer second last name.
+          schema:
+            type: string
+            example: Vanegas
+
+        - name: X-Transaction-ID
+          in: header
+          required: false
+          description: Unique identifier used to trace the request across systems.
+          schema:
+            type: string
+            format: uuid
+
+      responses:
+        "200":
+          description: Customer details retrieved successfully.
+          content:
+            image/jpeg:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    $ref: "#/components/schemas/SuccessMeta"
+
+                  data:
+                    type: array
+                    description: List of customers matching the search criteria.
+                    items:
+                      type: object
+                      properties:
+
+                        employeeNumber:
+                          type: string
+                          description: Employee number associated with the customer.
+                          example: "100245"
+
+                        name:
+                          type: object
+                          description: Customer full name.
+                          properties:
+                            firstName:
+                              type: string
+                              description: Customer given name.
+                              example: José
+                            lastName:
+                              type: string
+                              description: Customer first last name.
+                              example: Ramos
+                            secondLastName:
+                              type: string
+                              description: Customer second last name.
+                              example: Vanegas
+
+                        address:
+                          type: object
+                          description: Customer home address.
+                          properties:
+
+                            street:
+                              type: string
+                              description: >
+                                ES: Calle del domicilio del cliente.
+                                EN: Customer home address street.
+                              example: "Avenida Talisman"
+
+                            number:
+                              type: integer
+                              description: >
+                                ES: Numero de casa del domicilio del cliente.
+                                EN: Customer home address house number.
+                              example: 20
+
+                            zone:
+                              type: string
+                              description: >
+                                ES: Colonia del domicilio del cliente.
+                                EN: Customer neighborhood.
+                              example: "Tlalpan"
+
+                            zip:
+                              type: string
+                              description: >
+                                ES: Codigo Postal del domicilio del cliente.
+                                EN: Customer ZIP/postal code.
+                              example: 53320
+
+                            city:
+                              type: object
+                              description: Customer city information.
+                              properties:
+                                name:
+                                  type: string
+                                  description: >
+                                    ES: Nombre de la ciudad del domicilio del cliente de Cartera en Linea.
+                                    EN: Customer city name from Cartera en Línea.
+                                  example: México
+
+                                number:
+                                  type: integer
+                                  description: >
+                                    ES: Numero de la ciudad del domicilio del cliente de Cartera en Linea.
+                                    EN: Customer city identifier from Cartera en Línea.
+                                  example: 10
+
+                        birthDate:
+                          type: string
+                          format: date
+                          description: Customer birth date.
+
+                        CURP:
+                          type: string
+                          description: Mexican Unique Population Registry Code.
+                          example: RAVJ900315HDFMNS09
+
+                        RFC:
+                          type: string
+                          description: Mexican Federal Taxpayer Registry identifier.
+                          example: RAVJ900315KJ4
+
+                        currentDebt:
+                          type: object
+                          description: Current outstanding customer debt.
+                          properties:
+                            amount:
+                              type: number
+                              format: double
+                              description: Current debt amount.
+                              example: 500.00
+
+                            transaction:
+                              type: object
+                              description: Transaction associated with the debt.
+                              properties:
+                                type:
+                                  type: string
+                                  description: Transaction type.
+                                  example: "M"
+
+                        creditBehavior:
+                          type: object
+                          description: Customer credit behavior information.
+                          properties:
+
+                            paymentPunctuality:
+                              type: string
+                              description: Customer payment punctuality rating.
+                              example: "A"
+
+                            specialSituations:
+                              type: array
+                              description: List of customer special credit situations.
+                              items:
+                                type: object
+                                properties:
+
+                                  situation:
+                                    type: object
+                                    description: Special situation identifier.
+                                    properties:
+                                      key:
+                                        type: string
+                                        description: Situation code.
+                                        example: "200"
+                                      number:
+                                        type: integer
+                                        description: Numeric identifier of the situation.
+                                        example: 200
+
+                                  acronym:
+                                    type: string
+                                    description: Situation acronym.
+                                    example: "ACRONYM"
+
+                                  description:
+                                    type: string
+                                    description: Description of the special situation.
+                                    example: "A description for special situation"
+
+                                  applicationDate:
+                                    type: string
+                                    format: date
+                                    description: Date when the situation was applied.
+                                    example: "2026-07-21"
+
+                                  applicationEmployee:
+                                    type: integer
+                                    description: Employee who applied the situation.
+                                    example: 124
+
+                                  applicationCenter:
+                                    type: integer
+                                    description: Center where the situation was applied.
+                                    example: 100
+
+                            activeSalesConditioningAccount:
+                              type: string
+                              description: Indicates whether the customer has an active sales conditioning account.
+                              example: "SI"
+
+                            creditBureau:
+                              type: object
+                              description: Customer credit bureau information.
+                              properties:
+
+                                report:
+                                  type: string
+                                  description: Credit bureau report indicator.
+                                  example: "X"
+
+                                reportedAccounts:
+                                  type: array
+                                  description: Accounts reported to the credit bureau.
+                                  items:
+                                    type: object
+                                    properties:
+                                      number:
+                                        type: string
+                                        description: Reported account number.
+                                        example: "1234"
+                                      description:
+                                        type: string
+                                        description: Reported account description.
+                                        example: "Description account."
+                                      reportedDate:
+                                        type: string
+                                        format: date
+                                        description: Date when the account was reported.
+                                        example: "2026-07-21"
+
+                                removals:
+                                  type: object
+                                  description: Credit bureau removal information.
+                                  properties:
+                                    date:
+                                      type: string
+                                      format: date
+                                      description: Removal request date.
+                                      example: "2026-07-21"
+                                    requestingParty:
+                                      type: string
+                                      description: Person requesting the removal.
+                                      example: "Ana López"
+
+                                updates:
+                                  type: object
+                                  description: Credit bureau update information.
+                                  properties:
+                                    date:
+                                      type: string
+                                      format: date
+                                      description: Update request date.
+                                      example: "2026-07-21"
+                                    requestingParty:
+                                      type: string
+                                      description: Person requesting the update.
+                                      example: "Ana López"
+
+                                updatesDates:
+                                  type: array
+                                  description: History of credit bureau updates.
+                                  items:
+                                    type: object
+                                    properties:
+                                      date:
+                                        type: string
+                                        format: date
+                                        description: Update date.
+                                        example: "2026-07-21"
+                                      reason:
+                                        type: string
+                                        description: Reason for the update.
+                                        example: "Description of reason."
+
+                                bankruptCustomer:
+                                  type: object
+                                  description: Bankruptcy-related customer information.
+                                  properties:
+                                    secondChancePlans:
+                                      type: array
+                                      description: List of second chance plans.
+                                      items:
+                                        type: object
+                                        properties:
+                                          name:
+                                            type: string
+                                            description: Plan name.
+                                            example: "Plan name"
+                                          description:
+                                            type: string
+                                            description: Plan description.
+                                            example: "Description"
+                                          healDebt:
+                                            nullable: true
+                                            description: Debt healing program.
+                                            example: null
+                                          easyPay:
+                                            nullable: true
+                                            description: Easy Pay program.
+                                            example: null
+                                          getUpToDate:
+                                            nullable: true
+                                            description: Get Up To Date program.
+                                            example: null
+                                          discountsforNegotiation:
+                                            nullable: true
+                                            description: Negotiation discount program.
+                                            example: null
+
+                                collectionVisitStatus:
+                                  nullable: true
+                                  description: Collection visit status.
+                                  example: null
+
+                        credentialsCustomer:
+                          type: object
+                          description: Customer contact credentials.
+                          properties:
+
+                            email:
+                              type: object
+                              description: Customer email information.
+                              properties:
+                                account:
+                                  type: string
+                                  description: Email address.
+                                  example: "jose@email.com"
+                                status:
+                                  type: boolean
+                                  description: Email validation status.
+                                  example: false
+                                changeHistory:
+                                  type: array
+                                  description: Email change history.
+                                  items:
+                                    type: object
+                                    properties:
+                                      account:
+                                        type: string
+                                        description: Previous email address.
+                                        example: "old@email.com"
+                                      date:
+                                        type: string
+                                        format: date
+                                        description: Change date.
+                                        example: "2026-07-21"
+                                      place:
+                                        type: string
+                                        description: Place where the change was made.
+                                        example: "Ciudad de México"
+
+                            phone:
+                              type: object
+                              description: Customer phone information.
+                              properties:
+                                number:
+                                  type: string
+                                  description: Phone number.
+                                  example: "jose@emmail.com"
+                                status:
+                                  type: string
+                                  description: Phone status.
+                                  example: "vc"
+                                changeHistory:
+                                  type: array
+                                  description: Phone change history.
+                                  items:
+                                    type: object
+                                    properties:
+                                      phone:
+                                        type: string
+                                        description: Previous phone number.
+                                        example: "old@email.com"
+                                      registrationDate:
+                                        type: string
+                                        format: date
+                                        description: Registration date.
+                                        example: "2026-07-21"
+                                      cancelationPlace:
+                                        type: string
+                                        description: Place where the phone was cancelled.
+                                        example: "2026-07-21"
+
+                        originCustomer:
+                          type: object
+                          description: Customer origin information.
+                          properties:
+                            date:
+                              type: string
+                              format: date
+                              description: Customer registration date.
+                              example: "2026-07-21"
+                            store:
+                              type: string
+                              description: Store where the customer was registered.
+                              example: "Ciudad México"
+                            contractSection:
+                              type: string
+                              description: Contract section.
+                              example: "Apartado de contrato."
+                            INE:
+                              type: string
+                              description: INE information.
+                              example: "Datos INE"
+                            INEchangeHistory:
+                              type: array
+                              description: INE change history.
+                              items:
+                                type: object
+                                properties:
+                                  registrationDate:
+                                    type: string
+                                    format: date
+                                    description: Registration date.
+                                    example: "2026-07-21"
+                                  store:
+                                    type: string
+                                    description: Store where the change occurred.
+                                    example: "Ciudad de México"
+
+                        purchases:
+                          type: object
+                          description: Customer purchase information.
+                          properties:
+                            id:
+                              type: string
+                              description: Purchase identifier.
+                              example: "1234"
+                            description:
+                              type: string
+                              description: Purchase description.
+                              example: "Purchase description"
+                            creditAmount:
+                              type: number
+                              format: double
+                              description: Credit purchase amount.
+                              example: 100
+                            cashAmount:
+                              type: number
+                              format: double
+                              description: Cash purchase amount.
+                              example: 100
+                            paymentMethod:
+                              type: string
+                              description: Payment method.
+                              example: "CARD"
+                            card:
+                              type: object
+                              properties:
+                                number:
+                                  type: string
+                                  description: Payment card number.
+                                  example: "1234"
+                            date:
+                              type: string
+                              format: date
+                              description: Purchase date.
+                              example: "2026-07-21"
+                            store:
+                              type: string
+                              description: Store where the purchase was made.
+                              example: "Ciudad de México"
+                            cashRegister:
+                              type: integer
+                              description: Cash register number.
+                              example: 8
+                            price:
+                              type: number
+                              format: double
+                              description: Purchase price.
+                              example: 100.00
+                            code:
+                              type: string
+                              description: Product code.
+                              example: "10000"
+                            noteNumber:
+                              type: integer
+                              description: Sales note number.
+                              example: 200
+                            employee:
+                              type: object
+                              description: Employee who performed the sale.
+                              properties:
+                                number:
+                                  type: integer
+                                  description: Employee number.
+                                  example: 100
+                                name:
+                                  type: string
+                                  description: Employee full name.
+                                  example: "Luis Pérez"
+
+                        productDeliveries:
+                          type: object
+                          description: Product delivery information.
+                          properties:
+                            deliveries:
+                              type: array
+                              description: List of product deliveries.
+                              items:
+                                type: object
+                                properties:
+                                  id:
+                                    type: integer
+                                    description: Delivery identifier.
+                                    example: 1
+                                  datetime:
+                                    type: string
+                                    format: date-time
+                                    description: Delivery date and time.
+                                  sku:
+                                    type: string
+                                    description: Product SKU.
+                                    example: "111"
+                                  description:
+                                    type: string
+                                    description: Product description.
+                                    example: "Product description"
+                                  address:
+                                    $ref: "#/components/schemas/Address"
+                                  evidences:
+                                    type: array
+                                    description: Delivery evidence list.
+                                    items: {}
+                                  employeeNumber:
+                                    type: string
+                                    description: Delivery employee.
+                                    example: "Jorge Sánchez"
+                                  personWhoRecieved:
+                                    type: string
+                                    description: Person who received the product.
+                                    example: "Ana Santos"
+                                  customerPhone:
+                                    type: string
+                                    description: Customer phone number.
+                                    example: 55234223453
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+        "504":
+          $ref: "#/components/responses/GatewayTimeout"
+
+  /customers/v1/customers/photos:
+    get:
+      tags:
+        - Customers
+      summary: Search photo customer
+      description: >
+        Retrieves  customer photograph by customer identifier or customer name.
+        
+      operationId: searchCustomerPhoto
+
+      parameters:
+        - name: customerId
+          in: query
+          required: false
+          description: Unique customer identifier.
+          schema:
+            type: string
+            example: "100245"
+
+        - name: firstName
+          in: query
+          required: false
+          description: Customer given name.
+          schema:
+            type: string
+            example: José
+
+        - name: lastName
+          in: query
+          required: false
+          description: Customer first last name.
+          schema:
+            type: string
+            example: Ramos
+
+        - name: secondLastName
+          in: query
+          required: false
+          description: Customer second last name.
+          schema:
+            type: string
+            example: Vanegas
+
+        - name: X-Transaction-ID
+          in: header
+          required: false
+          description: Unique identifier used to trace the request across systems.
+          schema:
+            type: string
+            format: uuid
+
+      responses:
+        "200":
+          description: Customer photograph retrieved successfully.
+          headers:
+            Content-Disposition:
+              schema: 
+                type: string
+              description: inline; filenmae="100245.jpeg"
+            Content-Type:
+              schema: 
+                type: string
+              description: image/jpeg
+            Content-Length:
+              schema: 
+                type: string
+              description: "254321"
+              example: 254321
+            Cache-Control:
+              schema: 
+                type: string
+              description: no-store
+          content:
+            image/jpeg:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    $ref: "#/components/schemas/SuccessMeta"
+                  data:
+                    type: object
+                    properties:
+                      photo:
+                        type: object
+                        description: Customer photograph.
+                        properties:
+                          mimeType:
+                            type: string
+                            description: MIME type of the image.
+                            example: image/jpeg
+
+                          fileName:
+                            type: string
+                            description: Photograph file name.
+                            example: 100245.jpg
+
+                          content:
+                            type: string
+                            format: byte
+                            description: Photograph encoded as Base64.
+
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+        "504":
+          $ref: "#/components/responses/GatewayTimeout"
+
+  /customers/v1/customers/salesforce/cases:
+    get:
+      summary: Get Salesforce cases list
+      description: >
+        Retrieves a list of Salesforce cases associated with customers. 
+        By default, it returns cases created within the current and previous month. 
+        Supports filtering by date range, case status, and customer number.
+      operationId: getSalesforceCases
+      tags:
+        - Salesforce Cases
+      parameters:
+        - name: startDate
+          in: query
+          required: false
+          description: >
+            Start date for filtering cases. Defaults automatically to the first day 
+            of the previous month if not provided.
+          schema:
+            type: string
+            format: date
+          example: "2026-06-01"
+
+        - name: endDate
+          in: query
+          required: false
+          description: >
+            End date for filtering cases. Defaults automatically to the current date 
+            if not provided.
+          schema:
+            type: string
+            format: date
+          example: "2026-07-24"
+
+        - name: status
+          in: query
+          required: false
+          description: Filter cases by status (e.g., OPEN, IN_PROGRESS, CLOSED).
+          schema:
+            type: string
+          example: "IN_PROGRESS"
+
+        - name: customerNumber
+          in: query
+          required: false
+          description: Filter cases by Customer ID/Number.
+          schema:
+            type: string
+          example: "CLI-12345"
+
+        - name: page
+          in: query
+          required: false
+          description: Page number for pagination.
+          schema:
+            type: integer
+            default: 1
+          example: 1
+
+        - name: limit
+          in: query
+          required: false
+          description: Number of records per page.
+          schema:
+            type: integer
+            default: 20
+          example: 20
+
+      responses:
+        '200':
+          description: List of cases retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalesforceResponse'
+
+components:
+
+
+  parameters:
+    XTransactionID:
+      name: X-Transaction-ID
+      in: header
+      required: false
+      description: Unique identifier used to trace the request across systems.
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+
+    BadRequest:
+      description: The request contains invalid or malformed information.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            meta:
+              transactionID: null
+              status: "CLIENT_ERROR"
+              statusCode: 400
+              timestamp: "2026-07-26T17:25:07.255596Z"
+              message: "Invalid request."
+            data: null
+
+    Forbidden:
+      description: The authenticated client is not authorized to access the requested resource.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            meta:
+              transactionID: null
+              status: "CLIENT_ERROR"
+              statusCode: 403
+              timestamp: "2026-07-26T17:25:07.255596Z"
+              message: "Access denied."
+            data: null
+
+    NotFound:
+      description: The requested resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            meta:
+              transactionID: null
+              status: "CLIENT_ERROR"
+              statusCode: 404
+              timestamp: "2026-07-26T17:25:07.255596Z"
+              message: "Resource not found."
+            data: null
+
+    BadGateway:
+      description: Invalid response received from an upstream service.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            meta:
+              transactionID: null
+              status: "SERVER_ERROR"
+              statusCode: 502
+              timestamp: "2026-07-20T17:25:07.255596Z"
+              message: "Bad Gateway."
+            data: null
+
+    GatewayTimeout:
+      description: The upstream service did not respond within the configured timeout period.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            meta:
+              transactionID: null
+              status: "SERVER_ERROR"
+              statusCode: 504
+              timestamp: "2026-07-26T17:25:07.255596Z"
+              message: "Gateway Timeout."
+            data: null
+
+  schemas:
+
+
+    UpdateRequest:
+      type: object
+      description: Successful response containing employee information.
+      properties:
+        meta:
+          $ref: "#/components/schemas/SuccessMeta"
+        data:
+          $ref: "#/components/schemas/EmployeeUpdateRequest"
+
+    EmployeeResponse:
+      type: object
+      description: Successful response containing employee information.
+      properties:
+        meta:
+          $ref: "#/components/schemas/SuccessMeta"
+        data:
+          $ref: "#/components/schemas/Employee"
+
+    SalesforceResponse:
+      type: object
+      description: Successful response containing employee information.
+      properties:
+        meta:
+          $ref: "#/components/schemas/SuccessMeta"
+        data:
+          $ref: "#/components/schemas/CaseDetailResponse"
+
+    CustomerCreditResponse:
+      type: object
+      description: Successful response containing customer credit information list.
+      properties:
+        meta:
+          $ref: "#/components/schemas/SuccessMeta"
+        data:
+          type: array
+          description: List of customers matching the search criteria.
+          items:
+            $ref: "#/components/schemas/CustomerCredit"
+
+    Employee:
+      type: object
+      description: Employee information.
+      properties:
+        employeeNumber:
+          type: string
+          description: Unique employee identifier.
+          example: "100245"
+        name:
+          $ref: "#/components/schemas/PersonName"
+        status:
+          $ref: "#/components/schemas/EmployeeStatus"
+        role:
+          $ref: "#/components/schemas/EmployeeRole"
+
+    PersonName:
+      type: object
+      description: Person full name.
+      properties:
+        name:
+          type: string
+          description: Given name.
+          example: "José"
+        lastName:
+          type: string
+          description: First last name.
+          example: "Ramos"
+        secondLastName:
+          type: string
+          description: Second last name.
+          example: "Vanegas"
+
+    EmployeeStatus:
+      type: object
+      description: Employee status information.
+      properties:
+        value:
+          type: string
+          description: Employee status code.
+          enum:
+            - ACTIVE
+            - SUSPENDED
+          example: "ACTIVE"
+        description:
+          type: string
+          description: Human-readable status description.
+          example: "Activo"
+
+    EmployeeRole:
+      type: object
+      description: Employee role information.
+      properties:
+        value:
+          type: string
+          description: Employee role code.
+          enum:
+            - ADMINISTRATOR
+            - OPERATOR
+          example: "ADMINISTRATOR"
+        description:
+          type: string
+          description: Human-readable role description.
+          example: "Administrador"
+
+    EmployeeUpdateRequest:
+      type: object
+      description: Request to update employee attributes.
+      properties:
+        status:
+          type: string
+          description: New employee status.
+          enum:
+            - ACTIVE
+            - SUSPENDED
+        role:
+          type: string
+          description: New employee role.
+          enum:
+            - ADMINISTRATOR
+            - OPERATOR
+      minProperties: 1
+
+    CustomerCredit:
+      type: object
+      description: Customer details including address and credit info.
+      properties:
+        employeeNumber:
+          type: string
+          description: Unique employee identifier.
+          example: "100245"
+        name:
+          $ref: "#/components/schemas/PersonName"
+        address:
+          $ref: "#/components/schemas/Address"
+        credit:
+          $ref: "#/components/schemas/CreditDetails"
+
+    Address:
+      type: object
+      description: Customer address information.
+      properties:
+        street:
+          type: string
+          description: Customer home address street.
+          example: "Benito Juárez"
+        number:
+          type: integer
+          description: Customer home address house number.
+          example: 30
+        zone:
+          type: string
+          description: Customer neighborhood.
+          example: "Colonia Romero"
+        zip:
+          type: string
+          description: Customer ZIP/Postal code.
+          example: "54430"
+        city:
+          $ref: "#/components/schemas/City"
+
+    City:
+      type: object
+      description: City details.
+      properties:
+        name:
+          type: string
+          description: Customer city name.
+          example: "Ciudad de México"
+        number:
+          type: integer
+          description: Customer city identifier.
+          example: 10
+
+    CreditDetails:
+      type: object
+      description: Customer credit information details.
+      properties:
+        applicationDate:
+          type: string
+          format: date
+          description: Credit application date.
+          example: "2026-07-18"
+        approvalDate:
+          type: string
+          format: date
+          description: Credit approval date.
+          example: "2026-07-19"
+        originationDate:
+          type: string
+          format: date
+          description: Credit origination date.
+          example: "2026-07-20"
+        originatingStore:
+          type: integer
+          description: Store where the credit originated.
+          example: 124
+        creditLimit:
+          $ref: "#/components/schemas/CreditLimit"
+        paymentPunctuality:
+          type: string
+          description: Customer payment punctuality rating.
+          enum:
+            - "A"
+            - "B"
+            - "C"
+            - "D"
+            - "N"
+            - "Z"
+          example: "A"
+
+    CreditLimit:
+      type: object
+      description: Customer credit limits.
+      properties:
+        max:
+          type: number
+          format: double
+          description: Maximum authorized credit limit.
+          example: 20000.00
+        real:
+          type: number
+          format: double
+          description: Available credit limit.
+          example: 18000.00
+
+    SuccessMeta:
+      type: object
+      description: Metadata describing a successful response.
+      properties:
+        transactionID:
+          type: string
+          format: uuid
+          description: Unique identifier assigned to the request.
+        status:
+          type: string
+          description: Request execution status.
+          example: "OK"
+        statusCode:
+          type: integer
+          description: HTTP status code.
+          example: 200
+        timestamp:
+          type: string
+          format: date-time
+          description: Response generation timestamp.
+
+    ErrorMeta:
+      type: object
+      description: Metadata describing an error response.
+      properties:
+        transactionID:
+          type: string
+          format: uuid
+          nullable: true
+          description: Request identifier.
+        status:
+          type: string
+          description: Error category.
+          example: "CLIENT_ERROR"
+        statusCode:
+          type: integer
+          description: HTTP status code.
+        timestamp:
+          type: string
+          format: date-time
+          description: Response generation timestamp.
+        message:
+          type: string
+          description: Error description.
+
+    ErrorResponse:
+      type: object
+      description: Standard error response.
+      properties:
+        meta:
+          $ref: "#/components/schemas/ErrorMeta"
+        data:
+          type: object
+          nullable: true
+          description: Null for error responses.
+
+
+
+
+
+    CaseDetailResponse:
+      type: object
+      title: Case Detail Response
+      description: Response schema containing case information, adjustment details, and Profeco regulatory data.
+      properties:
+        caseInformation:
+          type: object
+          description: General case information and management details.
+          properties:
+            customerName:
+              type: string
+              description: Customer full name (Nombre del cliente)
+              example: "John Doe"
+            creditCustomerId:
+              type: string
+              description: Credit customer number (#Cliente Crédito)
+              example: "CR-99201"
+            email:
+              type: string
+              format: email
+              description: Email address (Correo electrónico)
+              example: "john.doe@example.com"
+            homePhone:
+              type: string
+              description: Home phone number (Teléfono casa)
+              example: "5551234567"
+            mobilePhone:
+              type: string
+              description: Mobile phone number (Teléfono celular)
+              example: "5559876543"
+            caseOwner:
+              type: string
+              description: Case owner name or ID (Propietario del caso)
+              example: "Agent Smith"
+            caseNumber:
+              type: string
+              description: Case number (Número del caso)
+              example: "CAS-10023"
+            caseFolioNumber:
+              type: string
+              description: Case folio number (Número del Folio del Caso)
+              example: "FOL-8871"
+            group:
+              type: string
+              description: Assigned group (Grupo)
+              example: "Customer Support Tier 2"
+            detailedStatus:
+              type: string
+              description: Detailed status of the case (Estado Detallado)
+              example: "IN_PROGRESS"
+            preferredContactMethod:
+              type: string
+              enum: [EMAIL, PHONE, SMS, WHATSAPP]
+              description: Preferred contact method (Medio de contacto Preferido)
+              example: "EMAIL"
+            reportCategory:
+              type: string
+              description: Report category (Categoría de Reporte)
+              example: "Billing Issue"
+            type:
+              type: string
+              description: Case type (Tipo)
+              example: "Complaint"
+            cause:
+              type: string
+              description: Root cause (Causa)
+              example: "Incorrect Charge"
+            subCause:
+              type: string
+              description: Sub-cause (Sub Causa)
+              example: "Duplicate Billing"
+            area:
+              type: string
+              description: Responsible area (Area)
+              example: "Finance"
+            subject:
+              type: string
+              description: Case subject (Asunto)
+              example: "Duplicate charge on credit statement"
+            customerDescription:
+              type: string
+              description: Customer description/comment (Descripción/Comentario del Cliente)
+              example: "I was charged twice for the same product."
+            caseSource:
+              type: string
+              description: Source/Origin of the case (Origen del caso)
+              example: "Web Portal"
+            internalComment:
+              type: string
+              description: Internal agent notes (Comentario interno)
+              example: "Waiting for bank statement validation."
+            originalCase:
+              type: string
+              nullable: true
+              description: Original case number if duplicated/linked (Caso Original)
+              example: "CAS-09911"
+            priority:
+              type: string
+              enum: [LOW, MEDIUM, HIGH, CRITICAL]
+              description: Case priority (Prioridad)
+              example: "HIGH"
+            openedDateTime:
+              type: string
+              format: date-time
+              description: Opening date and time (Fecha/Hora de apertura)
+              example: "2026-07-20T09:00:00Z"
+            closedDateTime:
+              type: string
+              format: date-time
+              nullable: true
+              description: Closing date and time (Fecha/Hora de cierre)
+              example: "2026-07-24T10:00:00Z"
+            mergedInto:
+              type: string
+              nullable: true
+              description: Target case if merged (Combinado en)
+              example: null
+            createdBy:
+              type: string
+              description: User who created the case (Creado por)
+              example: "system.user"
+            reactivationCount:
+              type: integer
+              description: Number of reactivations (Cantidad de reactivaciones)
+              example: 0
+            pendingCustomerInformation:
+              type: boolean
+              description: Indicates if customer info is pending (Información pendiente del cliente)
+              example: false
+            closureReason:
+              type: string
+              nullable: true
+              description: Reason for closure (Motivo de Cierre)
+              example: "Resolved - Adjustment Applied"
+            caseResolutionDescription:
+              type: string
+              nullable: true
+              description: Resolution details (Descripción Resolución Caso)
+              example: "Adjustment approved and credited back."
+            resolutionDate:
+              type: string
+              format: date
+              nullable: true
+              description: Resolution date (Fecha de Resolución)
+              example: "2026-07-24"
+            activePunctuality:
+              type: string
+              description: Active SLA or timeliness indicator (Puntualidad Activa)
+              example: "On Time"
+            historicalPunctuality:
+              type: string
+              description: Historical timeliness indicator (Puntualidad Historica)
+              example: "95%"
+
+        adjustmentsInformation:
+          type: object
+          description: Financial and operational adjustment details.
+          properties:
+            adjustmentNumber:
+              type: string
+              description: Adjustment ID / Number (# Ajuste)
+              example: "ADJ-5541"
+            portfolioStatus:
+              type: string
+              description: Portfolio status (Estado Carteras)
+              example: "Active"
+            customerNumber:
+              type: string
+              description: Customer ID (Número del Cliente)
+              example: "CLI-12345"
+            requestStore:
+              type: string
+              description: Requesting store (Tienda de la solicitud)
+              example: "Store 102 - North"
+            requestRegion:
+              type: string
+              description: Requesting region (Región de la solicitud)
+              example: "Region North"
+            adjustmentRequestDate:
+              type: string
+              format: date
+              description: Date of adjustment request (Fecha de solicitud de ajuste)
+              example: "2026-07-21"
+            daysToRegisterAdjustment:
+              type: integer
+              description: Days elapsed to register adjustment (Días para registrar ajuste)
+              example: 1
+            daysToSendAdjustment:
+              type: integer
+              description: Days elapsed to send adjustment (Días para enviar ajuste)
+              example: 2
+            daysToAdjustRequest:
+              type: integer
+              description: Days elapsed to process adjustment request (Días para ajustar solicitud de ajuste)
+              example: 3
+            caseNumber:
+              type: string
+              description: Associated case number (Número del caso)
+              example: "CAS-10023"
+            caseFolioNumber:
+              type: string
+              description: Associated case folio (Número del Folio del Caso)
+              example: "FOL-8871"
+            creationDate:
+              type: string
+              format: date-time
+              description: Adjustment creation timestamp (Ajuste Fecha de creación)
+              example: "2026-07-21T11:20:00Z"
+            requestingEmployeeNumber:
+              type: string
+              description: Collaborator ID requesting the adjustment (Num. Colaborador que manda a ajustar)
+              example: "EMP-4431"
+            processingEmployeeNumber:
+              type: string
+              description: Collaborator ID executing the adjustment (Num. Colaborador que realizo ajuste)
+              example: "EMP-8812"
+            firstAdjustmentRequestDate:
+              type: string
+              format: date
+              description: Initial request date (Primer fecha de solicitud Ajuste)
+              example: "2026-07-21"
+            adjustment:
+              type: string
+              description: Adjustment classification/concept (Ajuste)
+              example: "Billing Error"
+            affectationChannel:
+              type: string
+              description: Channel affected by the issue (Canal de afectación)
+              example: "E-Commerce"
+            channel:
+              type: string
+              description: Request channel (Canal)
+              example: "In-Store POS"
+            affectationStore:
+              type: string
+              description: Affected store (Tienda de Afectación)
+              example: "Store 102 - North"
+            affectationRegion:
+              type: string
+              description: Affected region (Región de afectación)
+              example: "Region North"
+            affectedPortfolio:
+              type: string
+              description: Portfolio affected (Cartera afectada)
+              example: "Personal Credit"
+            invoiceNumber:
+              type: string
+              description: Invoice number (No. de factura)
+              example: "INV-9901"
+            invoiceAmount:
+              type: number
+              format: float
+              description: Invoice amount (Monto de factura)
+              example: 1500.00
+            invoiceDate:
+              type: string
+              format: date
+              description: Invoice date (Fecha de factura)
+              example: "2026-07-15"
+            authorizationMethod:
+              type: string
+              description: Authorization method (Método de autorización)
+              example: "Manager PIN"
+            adjustmentType:
+              type: string
+              description: Type of adjustment (Tipo de Ajuste)
+              example: "Total Refund"
+            fraudType:
+              type: string
+              nullable: true
+              description: Fraud classification if applicable (Tipo de Fraude)
+              example: "Identity Theft"
+            legalAdjustment:
+              type: boolean
+              description: Indicates if it is a legal department adjustment (Ajuste de Jurídico)
+              example: false
+            rulingStatus:
+              type: string
+              description: Ruling status (Dictaminación)
+              example: "Approved"
+            ruling:
+              type: string
+              description: Ruling outcome (Dictamen)
+              example: "Favorable to Customer"
+            rulingCause:
+              type: string
+              description: Cause for ruling (Causa dictaminación)
+              example: "System Error Verified"
+            rulingSubCause:
+              type: string
+              description: Sub-cause for ruling (Subcausa dictaminación)
+              example: "Gateway Time-out Duplicate"
+            salesChannel:
+              type: string
+              description: Channel of original sale (Canal de Venta)
+              example: "Mobile App"
+            initialRulingDate:
+              type: string
+              format: date
+              description: Initial ruling date (Fecha de Dictamen Inicial)
+              example: "2026-07-22"
+            lastRulingDate:
+              type: string
+              format: date
+              description: Last ruling update date (Última Fecha de Dictaminación)
+              example: "2026-07-23"
+            adjustedOrRejected:
+              type: string
+              enum: [ADJUSTED, REJECTED]
+              description: Final adjustment state (Ajustado/Rechazado)
+              example: "ADJUSTED"
+            rejectionCause:
+              type: string
+              nullable: true
+              description: Cause of rejection if applicable (Causa de Rechazo)
+              example: null
+            otherCause:
+              type: string
+              nullable: true
+              description: Additional cause details (Otra Causa)
+              example: null
+            adjustedAmount:
+              type: number
+              format: float
+              description: Total amount adjusted (Importe Ajustado)
+              example: 1500.00
+            adjustmentDate:
+              type: string
+              format: date
+              description: Date when adjustment was applied (Fecha del Ajuste)
+              example: "2026-07-23"
+            reversal:
+              type: boolean
+              description: Reversal flag (Reverso)
+              example: false
+            reversalCheck:
+              type: boolean
+              description: Reversal checkbox/validation (Reverso Chk)
+              example: false
+            otherReversalCause:
+              type: string
+              nullable: true
+              description: Other cause for reversal (Otra Causa Reverso)
+              example: null
+            reversedAmount:
+              type: number
+              format: float
+              description: Amount reversed (Importe Reversado)
+              example: 0.00
+            reversalDate:
+              type: string
+              format: date
+              nullable: true
+              description: Reversal date (Fecha de Reverso)
+              example: null
+            lastModificationDate:
+              type: string
+              format: date-time
+              description: Adjustment last modification date (Ajuste Fecha de la última modificación)
+              example: "2026-07-23T18:00:00Z"
+            closedDateTime:
+              type: string
+              format: date-time
+              nullable: true
+              description: Closure timestamp (Fecha/Hora de cierre)
+              example: "2026-07-24T10:00:00Z"
+            closureDate:
+              type: string
+              format: date
+              nullable: true
+              description: Closure date (Fecha de cierre)
+              example: "2026-07-24"
+            generalStatus:
+              type: string
+              description: General adjustment status (Estado General)
+              example: "COMPLETED"
+
+        profecoInformation:
+          type: object
+          description: PROFECO regulatory claim details.
+          properties:
+            profecoRegisterName:
+              type: string
+              description: PROFECO registry name (Nombre de Registro PROFECO)
+              example: "PROFECO Complaint - July 2026"
+            complaintMedium:
+              type: string
+              description: Initial channel of complaint (Medio de Queja)
+              example: "In-Person Conciliation"
+            profecoCause:
+              type: string
+              description: PROFECO registered cause (Causa PROFECO)
+              example: "Non-fulfillment of promotion"
+            linkCase:
+              type: string
+              nullable: true
+              description: Linked case reference (Vincular caso)
+              example: "CAS-10023"
+            previousFolio:
+              type: string
+              nullable: true
+              description: Previous folio number (Folio Previo)
+              example: "PREV-4411"
+            customerComment:
+              type: string
+              description: Customer complaint statement (Comentario del Cliente)
+              example: "Store did not honor advertised discount."
+            legalNotificationDate:
+              type: string
+              format: date
+              description: Date legal department was notified (Fecha de notificación de Jurídico)
+              example: "2026-07-22"
+            cost:
+              type: number
+              format: float
+              description: Legal/Claim cost (Costo)
+              example: 250.00
+            totalCost:
+              type: number
+              format: float
+              description: Total combined cost (Costo Total)
+              example: 250.00
+            detailedStatus:
+              type: string
+              description: PROFECO detailed status (Estado Detallado)
+              example: "HEARING_SCHEDULED"
+            cloningStatus:
+              type: string
+              description: Case cloning status (Estatus de clonación)
+              example: "ORIGINAL"
+            customerName:
+              type: string
+              description: Customer name registered (Nombre del Cliente)
+              example: "John Doe"
+            customerNumber:
+              type: string
+              description: Customer ID (Número de cliente)
+              example: "CLI-12345"
+            orderOrInvoiceNumber:
+              type: string
+              description: Order or Invoice number (Número de orden/Factura)
+              example: "INV-9901"
+            folioNumber:
+              type: string
+              description: PROFECO Folio Number (Número de folio)
+              example: "PRF-2026-88"
+            subCause:
+              type: string
+              description: PROFECO sub-cause (Sub Causa)
+              example: "Price tag discrepancy"
+            group:
+              type: string
+              description: Assigned group for PROFECO (Grupo)
+              example: "Legal - PROFECO Desk"
+            hearingDate:
+              type: string
+              format: date-time
+              description: Scheduled hearing date (Fecha de Audiencia)
+              example: "2026-08-15T11:00:00Z"
+            hearingDueDate:
+              type: string
+              format: date
+              description: Hearing expiration/deadline date (Vencimiento de la audiencia)
+              example: "2026-08-15"
+            sourceRegistry:
+              type: string
+              description: Origin registry (Registro origen)
+              example: "PROFECO Digital Concilianet"
+            ruling:
+              type: string
+              description: PROFECO ruling (Dictamen)
+              example: "Conciliated"
+            resolution:
+              type: string
+              description: Case resolution (Resolución)
+              example: "Settlement Agreed"
+            solutionComments:
+              type: string
+              description: Solution comments (Comentarios de la Solución)
+              example: "Voucher issued as compensation."
+            electronicMoneyAmount:
+              type: number
+              format: float
+              description: Electronic money granted (Dinero Electrónico)
+              example: 500.00
+            createdBy:
+              type: string
+              description: User who created the record (Creado por)
+              example: "legal.agent1"
+            lastModifiedBy:
+              type: string
+              description: User who last modified the record (Última modificación por)
+              example: "legal.agent2"
+            fileNumber:
+              type: string
+              description: Case expediente number (Expediente)
+              example: "EXP-2026-0034"
+            solutionDate:
+              type: string
+              format: date
+              description: Solution date (Fecha de Solución)
+              example: "2026-07-24"
+            finalComplaintMedium:
+              type: string
+              description: Final channel medium (Medio de Queja Final)
+              example: "Digital Conciliation"
+            invoiceDetails:
+              type: object
+              description: Specific invoice metadata for PROFECO.
+              properties:
+                invoiceFolio:
+                  type: string
+                  description: Invoice Folio (Factura - Folio Factura)
+                  example: "FOL-FAC-1122"
+                invoiceNumber:
+                  type: string
+                  description: Invoice Number (Factura - Número Factura)
+                  example: "INV-9901"
+                profecoRegister:
+                  type: string
+                  description: PROFECO invoice registry (Factura - Registro Profeco)
+                  example: "REG-9921"
+                portfolioCost:
+                  type: number
+                  format: float
+                  description: Portfolio cost for invoice (Factura - Costo Cartera)
+                  example: 1200.00
+                portfolio:
+                  type: string
+                  description: Portfolio type (Factura - Cartera)
+                  example: "Personal Credit"
+                createdBy:
+                  type: string
+                  description: Invoice record created by (Factura - Creado Por)
+                  example: "billing.system"
+                lastModifiedBy:
+                  type: string
+                  description: Invoice record last modified by (Factura - Última modificación por)
+                  example: "billing.agent"

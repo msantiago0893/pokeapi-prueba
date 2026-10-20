@@ -1,0 +1,23 @@
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 16px;
+}
+
+pre {
+  overflow: auto;
+  background: #f4f6f8;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}

@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "pokedex": {
+    "customer-360": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -65,10 +65,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "pokedex:build:production"
+              "buildTarget": "customer-360:build:production"
             },
             "development": {
-              "buildTarget": "pokedex:build:development"
+              "buildTarget": "customer-360:build:development"
             }
           },
           "defaultConfiguration": "development"

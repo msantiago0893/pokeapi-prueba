@@ -1,0 +1,25 @@
+<mat-toolbar color="primary">Customer 360</mat-toolbar>
+
+<main class="content">
+  <mat-card>
+    <mat-card-content class="actions">
+      <button mat-flat-button color="primary" (click)="getEmployee()">1. Obtener empleado</button>
+      <button mat-flat-button (click)="updateEmployee()">2. Actualizar empleado</button>
+      <button mat-flat-button (click)="searchCredits()">3. Créditos</button>
+      <button mat-flat-button (click)="searchDetails()">4. Detalles</button>
+      <button mat-flat-button (click)="searchPhoto()">5. Foto</button>
+      <button mat-flat-button (click)="getCases()">6. Casos Salesforce</button>
+    </mat-card-content>
+  </mat-card>
+
+  @if (result()) {
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Respuesta</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <pre>{{ result() | json }}</pre>
+      </mat-card-content>
+    </mat-card>
+  }
+</main>

@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
-import { PokemonListComponent } from './components/pokemon-list/pokemon-list';
+import { CustomerSearchComponent } from './components/customer-search/customer-search';
 
 export const routes: Routes = [
-  { path: '', component: PokemonListComponent },
+  { path: '', component: CustomerSearchComponent },
 ];
